@@ -1,3 +1,4 @@
+import 'package:conversor_moeda/widgets/campos_conversao.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -7,7 +8,6 @@ Future<Map> _getMoedas() async {
   try {
     const request = "https://api.hgbrasil.com/finance";
     final response = await http.get(Uri.parse(request));
-    print(response.body);
     return json.decode(response.body);
   } catch (e) {
     print(e);
@@ -23,8 +23,34 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  double? dolar;
+  double? dolar = 0;
   double? euro = 0;
+
+  final realController = TextEditingController();
+  final dolarController = TextEditingController();
+  final euroController = TextEditingController();
+
+
+  void _campoReal(String txt){
+    double real = double.parse(txt);
+    dolarController.text = (real/dolar!).toStringAsFixed(2);
+    euroController.text = (real/euro!).toStringAsFixed(2);
+  }
+
+   void _campoDolar(String txt){
+    double dolar = double.parse(txt);
+    realController.text = (dolar * this.dolar!).toStringAsFixed(2);
+    euroController.text = (dolar * this.dolar! / euro!).toStringAsFixed(2);
+  }
+
+   void _campoEuro(String txt){
+    double euro = double.parse(txt);
+    realController.text = (euro * this.euro!).toStringAsFixed(2);
+    dolarController.text = (euro * this.euro! / dolar!).toStringAsFixed(2);
+  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -66,16 +92,27 @@ class _HomeState extends State<Home> {
                     ),
                   );
                 } else {
-                  dolar = snapshot.data!['RESULTS']['CURRENCIES']['USD']['BUY'];
-                  euro = snapshot.data!['results']['currencies']['eur']['buy'];
+                  dolar = snapshot.data!['results']['currencies']['USD']["buy"];
+                  euro = snapshot.data!['results']['currencies']['EUR']["buy"];
                   return SingleChildScrollView(
+                    padding: const EdgeInsets.all(10),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const Icon(
                           Icons.monetization_on,
                           size: 150,
                           color: Colors.amber,
-                        )
+                        ),
+                        buildTextField('Reais', 'R\$', realController, _campoReal),
+                        const Divider(
+                          color: Colors.amber
+                        ),
+                        buildTextField('Dolares', 'US\$', dolarController, _campoDolar),
+                        const Divider(
+                          color: Colors.amber,
+                        ),
+                        buildTextField('EUR', '€\$', euroController, _campoEuro),
                       ],
                     ),
                   );
