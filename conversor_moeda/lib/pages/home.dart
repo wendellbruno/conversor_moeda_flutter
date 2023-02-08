@@ -7,6 +7,7 @@ Future<Map> _getMoedas() async {
   try {
     const request = "https://api.hgbrasil.com/finance";
     final response = await http.get(Uri.parse(request));
+    print(response.body);
     return json.decode(response.body);
   } catch (e) {
     print(e);
@@ -22,6 +23,9 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  double? dolar;
+  double? euro = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,7 +41,7 @@ class _HomeState extends State<Home> {
       body: FutureBuilder<Map>(
           future: _getMoedas(),
           builder: (context, snapshot) {
-            switch(snapshot.connectionState){
+            switch (snapshot.connectionState) {
               case ConnectionState.none:
               case ConnectionState.waiting:
                 return const Center(
@@ -48,10 +52,10 @@ class _HomeState extends State<Home> {
                       fontSize: 25,
                     ),
                     textAlign: TextAlign.center,
-                    ),
+                  ),
                 );
               default:
-                if(snapshot.hasError){
+                if (snapshot.hasError) {
                   return const Center(
                     child: Text(
                       'Erro ao carregar dados :(',
@@ -61,9 +65,19 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                   );
-                }else{
-                  return Container(
-                    color: Colors.green,
+                } else {
+                  dolar = snapshot.data!['RESULTS']['CURRENCIES']['USD']['BUY'];
+                  euro = snapshot.data!['results']['currencies']['eur']['buy'];
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.monetization_on,
+                          size: 150,
+                          color: Colors.amber,
+                        )
+                      ],
+                    ),
                   );
                 }
             }
